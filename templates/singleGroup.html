@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title%} {{ title }} {% endblock %}
+{% block content%}
+
+
+<div class="container py-4 text-center">
+
+
+    {% if current_user.is_authenticated %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+                <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+    <div class = "container float-end">
+    <a class="btn btn-primary float-end pr-1" href={{url_for('create_group')}} role="button">Create Group</a>
+        <a class="btn btn-primary float-end pl-1" href={{url_for('submit_articles')}} role="button">Post Article</a>
+        </div>
+    <h1>Articles</h1>
+    <br>
+    <h3>{{group}}</h3>
+    <input class="form-control" id="myInput" type="text" placeholder="Search..">
+  <br>
+    <div class="table-wrapper-scroll-y my-custom-scrollbar">
+    <table class="table table-striped">
+  <thead>
+    <tr>
+        <th scope="col">Date of Post (in UTC)</th>
+      <th scope="col">User</th>
+      <th scope="col">Title</th>
+      <th scope="col">Link</th>
+      <th scope="col">Comment</th>
+        <th scope="col">Genre</th>
+      </tr>
+  </thead>
+         <tbody id="articleTable">
+    {% for article in query %}
+        <tr>
+            <td>
+              {{article.date}}
+          </td>
+          <td >
+              {{article.username}}
+          </td>
+            <td>
+              {{article.title}}
+          </td>
+            <td>
+             <a href = {{article.link}}> {{article.link}} </a>
+          </td>
+            <td>
+            {{article.comment}}
+          </td>
+            <td>
+            {{article.category}}
+          </td>
+
+        </tr>
+        {% endfor %}
+ </tbody>
+</table>
+
+    </div>
+
+    {% else %}
+
+    <a href="{{url_for('login')}}">Sign in/Sign Up</a>
+
+    {% endif %}
+</div>
+
+
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#articleTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
+{% endblock %}
