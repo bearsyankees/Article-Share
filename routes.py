@@ -115,7 +115,7 @@ def register():
             newuser = User(
                 username=username,
                 email=email,
-                pwd=bcrypt.generate_password_hash(pwd),
+                pwd=bcrypt.generate_password_hash(pwd).decode('utf8'),
             )
 
             db.session.add(newuser)
@@ -210,7 +210,7 @@ def create_group():
             pwd = form.password.data
             newgroup = Groups(
                 name=name,
-                pwd=bcrypt.generate_password_hash(pwd)
+                pwd=bcrypt.generate_password_hash(pwd).decode('utf8')
             )
             db.session.add(newgroup)
             user = User.query.filter_by(username=current_user.username).first()
