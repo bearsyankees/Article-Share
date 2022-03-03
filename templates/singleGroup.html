@@ -4,7 +4,40 @@
 
 
 <div class="container py-4 text-center">
+   {% block navbar %}
 
+<nav class="navbar navbar-light bg-light float-end">
+  <div class="container-fluid ">
+    <!-- <a class="navbar-brand" href="#">Navbar</a> -->
+    <button class="navbar-toggler float-end" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href={{url_for('articles')}}>Articles</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={{url_for('create_group')}}>Create Group</a>
+        </li>
+          <li class="nav-item">
+          <a class="nav-link" href={{url_for('join_group')}}>Join Group</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Groups
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% for group in groups %}
+            <li><a class="dropdown-item" href={{url_for('single_group',group=group)}}>{{group}}</a></li>
+              {% endfor %}
+              </ul>
+        </li>
+    </div>
+  </div>
+</nav>
+
+{% endblock %}
 
     {% if current_user.is_authenticated %}
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -18,13 +51,13 @@
                 {% endfor %}
                 {% endif %}
                 {% endwith %}
-    <div class = "container float-end">
-    <a class="btn btn-primary float-end pr-1" href={{url_for('create_group')}} role="button">Create Group</a>
-        <a class="btn btn-primary float-end pl-1" href={{url_for('submit_articles')}} role="button">Post Article</a>
-        </div>
-    <h1>Articles</h1>
     <br>
-    <h3>{{group}}</h3>
+    <h1 class = "position-absolute start-50 translate-middle">Articles</h1>
+    <br>
+    <br>
+    <br>
+    <h3 class = "position-absolute start-50 translate-middle">{{group}}</h3>
+    <br>
     <input class="form-control" id="myInput" type="text" placeholder="Search..">
   <br>
     <div class="table-wrapper-scroll-y my-custom-scrollbar">
@@ -65,6 +98,37 @@
         {% endfor %}
  </tbody>
 </table>
+        {%if owner%}
+                    <a href={{url_for('deletegroups',group=group)}} class="btn btn-danger confirm-delete" role="button" data-target="#confirmDeleteModal">Delete Group</a>
+        <!-- Button trigger modal -->
+<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
+  Delete group 1
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to delete {{group}}?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        This action can not be undone.
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <form action={{url_for('deletegroups',group=group)}} method="post">
+              <button class="btn btn-danger confirm-delete" role="button" data-target="#confirmDeleteModal">Delete Group</button>
+</form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+        {% endif %}
 
     </div>
 
@@ -86,4 +150,6 @@ $(document).ready(function(){
   });
 });
 </script>
+
+
 {% endblock %}

@@ -7,4 +7,12 @@ overflow: auto;
 display: block;
 }
 
+.content {
+  position: relative;
+}
+
+#collapseExample {
+  position: absolute;
+  z-index: 1;
+}
 

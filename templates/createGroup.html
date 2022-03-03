@@ -26,13 +26,18 @@
 
       <h1 class="pt-5 pb-2">Create your group here!</h1>
 
-      {{ wtf.quick_form(form) }}
+    {{ wtf.quick_form(form, button_map={'submit': 'primary'})}}
+
+        <br>
+
+            <a href={{url_for('join_group')}} class="btn btn-secondary" role="button" >Or join a group here</a>
 
       <p class="pt-5"><strong>{{ message }}</strong></p>
 
     </div>
   </div>
 </div>
+
     {% else %}
 
     <a href="{{url_for('login')}}">Sign in/Sign Up</a>
