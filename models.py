@@ -36,3 +36,4 @@ class Groups(db.Model):
     pwd = db.Column(db.String(300), nullable=False)
     creator = db.Column(db.String())
     members = db.Column(db.String())
+    notifs = db.Column(db.String())

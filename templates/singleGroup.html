@@ -2,44 +2,31 @@
 {% block title%} {{ title }} {% endblock %}
 {% block content%}
 
-
-<div class="container py-4 text-center">
-   {% block navbar %}
-
-<nav class="navbar navbar-light bg-light float-end">
+<nav class="navbar float-start">
   <div class="container-fluid ">
-    <!-- <a class="navbar-brand" href="#">Navbar</a> -->
-    <button class="navbar-toggler float-end" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+    <button class="navbar-toggler float-start" type="button" data-bs-toggle="collapse" data-bs-target="#settings" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="fa fa-fw fa-lg fa-gear"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <div class="collapse navbar-collapse" id="settings">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          {%if owner%}
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href={{url_for('articles')}}>Articles</a>
+          <button type="button" class="btn link-danger nav-link" data-bs-toggle="modal" data-bs-target="#deletionModal">Delete group "{{group}}"</button>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href={{url_for('create_group')}}>Create Group</a>
-        </li>
+          {%endif%}
           <li class="nav-item">
-          <a class="nav-link" href={{url_for('join_group')}}>Join Group</a>
+          <button type="button" class="btn link-danger nav-link" data-bs-toggle="modal" data-bs-target="#leaveModal">Leave group "{{group}}"</button>
         </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Groups
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              {% for group in groups %}
-            <li><a class="dropdown-item" href={{url_for('single_group',group=group)}}>{{group}}</a></li>
-              {% endfor %}
-              </ul>
-        </li>
+
     </div>
   </div>
 </nav>
 
-{% endblock %}
+<div class="container py-4 text-center">
+        {% if current_user.is_authenticated %}
 
-    {% if current_user.is_authenticated %}
+
+
     {% with messages = get_flashed_messages(with_categories=true) %}
                 <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
                 {% if messages %}
@@ -98,19 +85,15 @@
         {% endfor %}
  </tbody>
 </table>
-        {%if owner%}
-                    <a href={{url_for('deletegroups',group=group)}} class="btn btn-danger confirm-delete" role="button" data-target="#confirmDeleteModal">Delete Group</a>
         <!-- Button trigger modal -->
-<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">
-  Delete group 1
-</button>
+
 
 <!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Are you sure you want to delete {{group}}?</h5>
+        <h5 class="modal-title" id="deletionModalLabel">Are you sure you want to delete {{group}}?</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -128,7 +111,30 @@
   </div>
 </div>
 
-        {% endif %}
+
+        <div class="modal fade" id="leaveModal" tabindex="-1" aria-labelledby="leaveModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leaveModalLabel">Are you sure you want to leave {{group}}?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        This action can not be undone.
+      </div>
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <form action={{url_for('leavegroup',group=group)}} method="post">
+              <button class="btn btn-danger confirm-delete" role="button" data-target="#confirmLeaveModal">Leave Group</button>
+</form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
     </div>
 

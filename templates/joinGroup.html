@@ -27,8 +27,8 @@
       <h1 class="pt-5 pb-2">Join a group here!</h1>
 
     {{ wtf.quick_form(form, button_map={'submit': 'primary'})}}
+        <br>
     <a href={{url_for('create_group')}} class="btn btn-secondary" role="button" >Or create a group here</a>
-
       <p class="pt-5"><strong>{{ message }}</strong></p>
 
     </div>

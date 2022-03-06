@@ -32,6 +32,8 @@ from flask_login import (
     login_required,
 )
 
+from flask_mail import Message, Mail
+
 from app import create_app, db, login_manager, bcrypt, debug
 from models import User, Articles, Groups
 from forms import login_form, register_form, submitArticle, createGroup, joinGroup
@@ -43,19 +45,22 @@ def get_title(url):
         return (soup.title.string)
 
 
-def add_to_group(user, group, new = False):
+def add_to_group(user, group, notifs, new = False):
     if user.groups:
         groups = user.groups
         group_list = get_groups(groups)
-        adding_group = Groups.query.filter_by(name=group).first().members
-        print(adding_group)
-        members_list = get_members(adding_group)
         if group not in group_list or new:
+            adding_group = Groups.query.filter_by(name=group).first().members
+            members_list = get_members(adding_group)
             group_list.append(group)
             user.groups = ','.join(group_list)
             members_list.append(user.username)
-            print(members_list)
             Groups.query.filter_by(name=group).first().members = ','.join(members_list)
+            if notifs:
+                notif_adding_group = Groups.query.filter_by(name=group).first().notifs
+                notif_list = get_members(notif_adding_group)
+                notif_list.append(user.username)
+                Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
             flash("Successfuly joined {}".format(group), "success")
             return True
         else:
@@ -66,13 +71,6 @@ def add_to_group(user, group, new = False):
         return True
 
 
-def get_groups(groups):
-    if groups:
-        group_list = groups.split(",")
-        group_list1 = [group for group in group_list if Groups.query.filter_by(name=group).all()]
-        return group_list1
-    return None
-
 def get_members(members):
     if members:
         members_list = members.split(",")
@@ -81,15 +79,27 @@ def get_members(members):
     else:
         return []
 
-def leave_group(group_to_leave,groups):
+def leave_group(group_to_leave,groups, deletion = False):
+    group_instance = Groups.query.filter_by(name=group_to_leave).first()
     group_list = groups.split(",")
     group_list1 = [group for group in group_list if Groups.query.filter_by(name=group).all() and group != group_to_leave]
-    return group_list1
+    notif_list = get_members(group_instance.notifs)
+    notif_list1 = [member for member in notif_list if member != current_user.username]
+    member_list = get_members(group_instance.members)
+    member_list1 = [member for member in member_list if member != current_user.username]
+    group_instance.notifs = ','.join(notif_list1)
+    group_instance.members = ','.join(member_list1)
+    if not deletion:
+        db.session.commit()
+        current_user.groups = group_list1
+    else:
+        db.session.commit()
+        return group_list1
 
 def delete_group(group):
     for user in get_members(Groups.query.filter_by(name=group).first().members):
         print(user)
-        User.query.filter_by(username=user).first().groups = leave_group(group,User.query.filter_by(username=user).first().groups)
+        User.query.filter_by(username=user).first().groups = leave_group(group,User.query.filter_by(username=user).first().groups,deletion = True)
     Groups.query.filter_by(name=group).delete()
 
 @login_manager.user_loader
@@ -99,12 +109,20 @@ def load_user(user_id):
 
 app = create_app()
 
+@app.template_global()
+def get_groups(groups):
+    if groups:
+        group_list = groups.split(",")
+        group_list1 = [group for group in group_list if Groups.query.filter_by(name=group).all()]
+        return group_list1
+    return None
+
+
 
 # Home route
 @app.route("/", methods=("GET", "POST"), strict_slashes=False)
 def index():
-    return render_template("index.html", title="Home")
-
+        return redirect(url_for("articles"))
 
 # Login route
 @app.route("/login/", methods=("GET", "POST"), strict_slashes=False)
@@ -146,6 +164,15 @@ def register():
 
             db.session.add(newuser)
             db.session.commit()
+            msg = Message(
+                'Welcome to SquibLib, {}.'.format(username),
+                sender='notifications@squiblib.com',
+                recipients=[email])
+            msg.body = "This is the email body"
+            msg.html = '<b>Welcome!</b>'
+            mail = Mail(app)
+            with app.app_context():
+                mail.send(msg)
             flash(f"Account Succesfully created", "success")
             return redirect(url_for("login"))
 
@@ -229,9 +256,9 @@ def articles():
     queries = []
     groups = get_groups(current_user.groups)
     if groups:
-        for group in get_groups(current_user.groups):
+        for group in groups:
             queries.append([group, Articles.query.filter_by(groups=group).order_by(Articles.id.desc()).all()])
-        return render_template("articles.html", queries=queries)  # , query1 = Articles.query.order_by(Articles.id.desc()))
+        return render_template("articles.html", queries=queries, groups = groups)  # , query1 = Articles.query.order_by(Articles.id.desc()))
     else:
         flash("Seems like you aren't part of any groups yet!","warning")
         return redirect(url_for('join_group'))
@@ -244,6 +271,7 @@ def create_group():
         try:
             name = form.group_name.data
             pwd = form.password.data
+            notifs = form.notifs.data
             newgroup = Groups(
                 name=name,
                 pwd=bcrypt.generate_password_hash(pwd).decode('utf8'),
@@ -252,7 +280,7 @@ def create_group():
             db.session.add(newgroup)
             #db.session.commit()
             user = User.query.filter_by(username=current_user.username).first()
-            add_to_group(user, name, new = True)
+            add_to_group(user, name, notifs, new = True)
 
             db.session.commit()
             flash(f"Group Successfully Created", "success")
@@ -276,11 +304,13 @@ def join_group():
         try:
             name = form.group_name.data
             pwd = form.password.data
+            notifs = form.notifs.data
+            print(notifs)
             group = Groups.query.filter_by(name=name).first()
             if group:
                 if check_password_hash(group.pwd, pwd):
                     user = User.query.filter_by(username=current_user.username).first()
-                    if add_to_group(user, name):
+                    if add_to_group(user, name, notifs):
                         db.session.commit()
                         return redirect(url_for('articles'))
                     else:
@@ -307,7 +337,7 @@ def single_group(group):
                 query = Articles.query.filter_by(groups=group).order_by(Articles.id.desc()).all()
                 if current_user.username == Groups.query.filter_by(name=group).first().creator:
                     owner = True
-                return render_template("singleGroup.html", query=query, group=group, title="Second page",groups = get_groups(current_user.groups), owner=owner)
+                return render_template("singleGroup.html", query=query, group=group, title=group, groups = get_groups(current_user.groups), owner=owner)
             else:
                 return "Sorry, you are not part of this group"
         else:
@@ -329,6 +359,18 @@ def deletegroups(group):
         flash(e, "danger")
         return redirect(url_for("articles"))
 
+@app.route('/leave/<group>',methods =['POST'])
+@login_required
+def leavegroup(group):
+    try:
+        leave_group(group_to_leave=group,groups = current_user.groups)
+        db.session.commit()
+        flash("Successfuly left {}!".format(group) , "success")
+        return redirect(url_for("articles"))
+    except Exception as e:
+        db.session.rollback()
+        flash(e, "danger")
+        return redirect(url_for("articles"))
 
 
 if __name__ == "__main__":

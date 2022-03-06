@@ -16,10 +16,52 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
+        {% if current_user.is_authenticated %}
+
+ {% block navbar %}
+
+<nav class="navbar navbar-light float-end">
+  <div class="container-fluid ">
+    <!-- <a class="navbar-brand" href="#">Navbar</a> -->
+    <button class="navbar-toggler float-end" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span> {{current_user.username}}
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href={{url_for('submit_articles')}}>Post Article</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href={{url_for('articles')}}>Articles</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={{url_for('create_group')}}>Create Group</a>
+        </li>
+          <li class="nav-item">
+          <a class="nav-link" href={{url_for('join_group')}}>Join Group</a>
+        </li>
+          {% if get_groups(current_user.groups) %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Groups
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% for group in get_groups(current_user.groups) %}
+            <li><a class="dropdown-item" href={{url_for('single_group',group=group)}}>{{group}}</a></li>
+              {% endfor %}
+              </ul>
+        </li>
+          {% endif %}
+    </div>
+  </div>
+</nav>
+
+{% endblock %}
+        {% endif %}
     <div class="container-fluid">
         {% block content%}
         {% endblock %}

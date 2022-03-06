@@ -1,3 +1,5 @@
+# squiblib.com
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -6,6 +8,7 @@ from flask_bootstrap import Bootstrap
 from os import environ
 from flask_nav import Nav
 from flask_nav.elements import *
+from flask_mail import Mail
 import dominate
 from dominate.tags import *
 
@@ -40,6 +43,15 @@ if environ["debug"] == "1":
 
 def create_app():
     app = Flask(__name__)
+    app.config.update(dict(
+        MAIL_SERVER='smtp.gmail.com',
+        MAIL_PORT=587,
+        MAIL_USE_TLS=True,
+        MAIL_USE_SSL=False,
+        MAIL_USERNAME=environ["MAIL_USERNAME"],
+        MAIL_PASSWORD=environ["MAIL_PASSWORD"],
+    ))
+
     """if debug:
         import credentials
         app.secret_key = credentials.app_secret

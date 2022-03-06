@@ -7,7 +7,8 @@ from wtforms import (
     IntegerField,
     DateField,
     TextAreaField,
-    SelectField
+    SelectField,
+    widgets
 )
 
 import re
@@ -56,16 +57,18 @@ class submitArticle(FlaskForm):
     comment = StringField()
     category = StringField()
     group = SelectField(u'Group to share with:', validators=[InputRequired()])
-    submit = SubmitField('Submit')
+    submit = SubmitField('Post')
 
 class createGroup(FlaskForm):
     group_name = StringField(validators=[InputRequired(), Length(1, 64)])
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=72)])
+    notifs = BooleanField("Do you want to receive email notifications when a new article is posted to your group?")
     submit = SubmitField('Create')
 
 class joinGroup(FlaskForm):
     group_name = StringField(validators=[InputRequired(), Length(1, 64)])
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=72)])
+    notifs = BooleanField("Do you want to receive email notifications when a new article is posted in this group?")
     submit = SubmitField('Join')
 
 

@@ -4,40 +4,7 @@
 
 {% if current_user.is_authenticated %}
 <div class="container py-4 text-center">
-    {% block navbar %}
 
-<nav class="navbar navbar-light bg-light float-end">
-  <div class="container-fluid ">
-    <!-- <a class="navbar-brand" href="#">Navbar</a> -->
-    <button class="navbar-toggler float-end" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href={{url_for('articles')}}>Articles</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href={{url_for('create_group')}}>Create Group</a>
-        </li>
-          <li class="nav-item">
-          <a class="nav-link" href={{url_for('join_group')}}>Join Group</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Groups
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-              {% for query in queries %}
-            <li><a class="dropdown-item" href={{url_for('single_group',group=query[0])}}>{{query[0]}}</a></li>
-              {% endfor %}
-              </ul>
-        </li>
-    </div>
-  </div>
-</nav>
-
-{% endblock %}
     {% with messages = get_flashed_messages(with_categories=true) %}
                 <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
                 {% if messages %}
