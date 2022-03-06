@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap
+from flask_talisman import Talisman
 from os import environ
 from flask_nav import Nav
 from flask_nav.elements import *
@@ -43,6 +44,7 @@ if environ["debug"] == "1":
 
 def create_app():
     app = Flask(__name__)
+    Talisman(app)
     app.config.update(dict(
         MAIL_SERVER='smtp.gmail.com',
         MAIL_PORT=587,
