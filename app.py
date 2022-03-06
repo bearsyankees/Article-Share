@@ -44,7 +44,7 @@ if environ["debug"] == "1":
 
 def create_app():
     app = Flask(__name__)
-    Talisman(app)
+    Talisman(app,content_security_policy=None)
     app.config.update(dict(
         MAIL_SERVER='smtp.gmail.com',
         MAIL_PORT=587,
