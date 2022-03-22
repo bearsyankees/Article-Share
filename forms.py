@@ -8,11 +8,12 @@ from wtforms import (
     DateField,
     TextAreaField,
     SelectField,
-    widgets
+    widgets,
+
 )
 
 import re
-
+from captcha import Recaptcha3Field
 from flask_wtf import FlaskForm
 from wtforms.validators import InputRequired, Length, EqualTo, Email, Regexp ,Optional, url
 import email_validator
@@ -42,6 +43,7 @@ class register_form(FlaskForm):
             EqualTo("pwd", message="Passwords must match !"),
         ]
     )
+    captcha = Recaptcha3Field(action="TestAction", execute_on_load=True)
 
 class login_form(FlaskForm):
     email = StringField(validators=[InputRequired(), Email(), Length(1, 64)])

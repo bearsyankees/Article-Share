@@ -20,7 +20,7 @@ class Articles(db.Model):
     __tablename__ = "articles"
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), nullable=False)
+    title = db.Column(db.String(300), nullable=False)
     link = db.Column(db.String(120), nullable=False)
     comment = db.Column(db.String(300))
     date = db.Column(db.DateTime())

@@ -17,6 +17,7 @@ Flask-Login==0.5.0
 Flask-Mail==0.9.1
 Flask-Migrate==3.1.0
 flask-nav==0.6
+Flask-ReCaptcha==0.4.2
 Flask-SQLAlchemy==2.5.1
 flask-talisman==0.8.1
 Flask-WTF==1.0.0

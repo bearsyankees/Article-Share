@@ -9,6 +9,7 @@ from flask_talisman import Talisman
 from os import environ
 from flask_nav import Nav
 from flask_nav.elements import *
+from flask_recaptcha import ReCaptcha
 from flask_mail import Mail
 import dominate
 from dominate.tags import *
@@ -54,14 +55,13 @@ def create_app():
         MAIL_PASSWORD=environ["MAIL_PASSWORD"],
     ))
 
-    """if debug:
-        import credentials
-        app.secret_key = credentials.app_secret
-        app.config['SQLALCHEMY_DATABASE_URI'] = environ["BETTER_DB_URL"] #"postgresql://ebbujurirdemwx:36bb1c06c42b36a0d332e4a01cae4ac7630f843f1b8fa88c21f5130454c1d6eb@ec2-52-5-1-20.compute-1.amazonaws.com:5432/d7rp2ua9kqp2kq" #"sqlite:///database.db"
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True"""
     app.secret_key = environ['APP_SECRET']
     app.config['SQLALCHEMY_DATABASE_URI'] = environ["BETTER_DB_URL"]
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+
+    app.config['RECAPTCHA3_PUBLIC_KEY'] = environ["SITE_KEY_CAPTCHA"]
+    app.config['RECAPTCHA3_PRIVATE_KEY'] = environ["SECRET_KEY_CAPTCHA"]
+    recaptcha = ReCaptcha(app)
 
     login_manager.init_app(app)
     db.init_app(app)

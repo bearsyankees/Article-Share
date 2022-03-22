@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row mt-4">
         <div class="col-lg-5 col-md-6 m-auto card p-4">
-            <form action="{{ request.path }}" method="POST" class="card-body">
+            <form action="{{ request.path }}" method="POST" class="card-body" id="lrform">
                 {{ form.csrf_token }}
 
                 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -63,9 +63,10 @@
                 </div> {% endfor%}
                 {% endif %}
                 <div class="text-center">
-
+                    {{ form.captcha }}
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-block btn-primary mb-3"> {{ btn_action }} </button>
+
                     </div>
 
                     <p>
@@ -84,3 +85,10 @@
     </div>
 </div>
 {% endblock %}
+
+
+ <script>
+   function onSubmit(token) {
+     document.getElementById("lrform").submit();
+   }
+ </script>

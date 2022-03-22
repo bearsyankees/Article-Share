@@ -37,6 +37,8 @@ from flask_mail import Message, Mail
 from app import create_app, db, login_manager, bcrypt, debug
 from models import User, Articles, Groups
 from forms import login_form, register_form, submitArticle, createGroup, joinGroup
+app = create_app()
+
 
 def get_title(url):
     with requests.Session() as session:
@@ -67,6 +69,15 @@ def add_to_group(user, group, notifs, new = False):
             flash("You are already in this group!", "danger")
     else:
         user.groups = group
+        adding_group = Groups.query.filter_by(name=group).first().members
+        members_list = get_members(adding_group)
+        members_list.append(user.username)
+        Groups.query.filter_by(name=group).first().members = ','.join(members_list)
+        if notifs:
+            notif_adding_group = Groups.query.filter_by(name=group).first().notifs
+            notif_list = get_members(notif_adding_group)
+            notif_list.append(user.username)
+            Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
         flash("Successfuly joined {}".format(group), "success")
         return True
 
@@ -102,12 +113,34 @@ def delete_group(group):
         User.query.filter_by(username=user).first().groups = leave_group(group,User.query.filter_by(username=user).first().groups,deletion = True)
     Groups.query.filter_by(name=group).delete()
 
+def send_post_notifications(recipients, title, poster, link, group, sender = "notifications@squiblib.com"):
+    msg = Message(
+        'New article from {}.'.format(poster),
+        sender=sender,
+        bcc=recipients)
+    msg.body = "This is the email body"
+    msg.html = '<b>{} just shared this article in your group</b> <a href={}>{}</a>! ' \
+               '<br>  <a href={}>{}</a>'.format(poster,url_for("single_group",group = group), group, link, title)
+    mail = Mail(app)
+    with app.app_context():
+        mail.send(msg)
+
+def alter_notifs(on, group):
+    if on:
+        notif_adding_group = Groups.query.filter_by(name=group).first().notifs
+        notif_list = get_members(notif_adding_group)
+        notif_list.append(current_user.username)
+        Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
+    if not on:
+        notif_adding_group = Groups.query.filter_by(name=group).first().notifs
+        notif_list = get_members(notif_adding_group)
+        notif_list = [member for member in notif_list if member != current_user.username]
+        Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
-app = create_app()
 
 @app.template_global()
 def get_groups(groups):
@@ -116,6 +149,8 @@ def get_groups(groups):
         group_list1 = [group for group in group_list if Groups.query.filter_by(name=group).all()]
         return group_list1
     return None
+
+@app.template_global()
 
 
 
@@ -127,6 +162,8 @@ def index():
 # Login route
 @app.route("/login/", methods=("GET", "POST"), strict_slashes=False)
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("articles"))
     form = login_form()
     # email1 = form.get('email')
     print(form.email.data)
@@ -195,6 +232,7 @@ def register():
         except BuildError:
             db.session.rollback()
             flash(f"An error occured !", "danger")
+
     return render_template("auth.html", form=form,
                            text="Create account",
                            title="Register",
@@ -226,7 +264,7 @@ def submit_articles():
                 date = datetime.datetime.utcnow()
                 group = form.group.data
                 print(date.strftime("%A, %b %d, %Y, %I:%M %p"))
-                print(title, link, comment, category, username)
+                print(title, link, comment, category, username,group,date)
 
                 newarticle = Articles(
                     title=title,
@@ -237,7 +275,12 @@ def submit_articles():
                     groups=group,
                     date=date
                 )
-
+                print(newarticle)
+                #recipients = [member.email for member in get_members(Groups.query.filter_by(groups=group).first().notifs):
+                recipients = [member[0].email for member in
+                              [User.query.filter_by(username=member).all() for member in get_members(
+                                  Groups.query.filter_by(name=group).first().notifs)]]
+                send_post_notifications(recipients,title,current_user.username,link,group)
                 db.session.add(newarticle)
                 db.session.commit()
                 flash(f"Article Succesfully Submitted", "success")
@@ -258,6 +301,7 @@ def articles():
     if groups:
         for group in groups:
             queries.append([group, Articles.query.filter_by(groups=group).order_by(Articles.id.desc()).all()])
+
         return render_template("articles.html", queries=queries, groups = groups)  # , query1 = Articles.query.order_by(Articles.id.desc()))
     else:
         flash("Seems like you aren't part of any groups yet!","warning")
@@ -372,6 +416,9 @@ def leavegroup(group):
         flash(e, "danger")
         return redirect(url_for("articles"))
 
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
 
 if __name__ == "__main__":
     if debug:
