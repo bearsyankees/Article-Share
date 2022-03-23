@@ -4,7 +4,8 @@ from flask import (
     redirect,
     flash,
     url_for,
-    session
+    session,
+    abort
 )
 import datetime
 from datetime import timedelta
@@ -37,8 +38,12 @@ from flask_mail import Message, Mail
 from app import create_app, db, login_manager, bcrypt, debug
 from models import User, Articles, Groups
 from forms import login_form, register_form, submitArticle, createGroup, joinGroup
+from itsdangerous import URLSafeTimedSerializer
+
+
 app = create_app()
 
+ts = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
 def get_title(url):
     with requests.Session() as session:
@@ -202,11 +207,22 @@ def register():
             db.session.add(newuser)
             db.session.commit()
             msg = Message(
-                'Welcome to SquibLib, {}.'.format(username),
+                'Welcome to SquibLib, {}, please confirm your email'.format(username),
                 sender='notifications@squiblib.com',
                 recipients=[email])
-            msg.body = "This is the email body"
-            msg.html = '<b>Welcome!</b>'
+
+            token = ts.dumps(email, salt='email-confirm-key')
+
+            confirm_url = url_for(
+                'confirm_email',
+                token=token,
+                _external=True)
+
+            html = render_template(
+                'email/activate.html',
+                confirm_url=confirm_url)
+
+            msg.html = html
             mail = Mail(app)
             with app.app_context():
                 mail.send(msg)
@@ -420,8 +436,23 @@ def leavegroup(group):
 def favicon():
     return app.send_static_file('favicon.ico')
 
+@app.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        email = ts.loads(token, salt="email-confirm-key", max_age=86400)
+    except:
+        abort(404)
+
+    user = User.query.filter_by(email=email).first_or_404()
+
+    user.email_verified = True
+    db.session.commit()
+    print("yahoo")
+    return redirect(url_for('login'))
+
 if __name__ == "__main__":
     if debug:
         app.run(debug=True)
+
     else:
         app.run(debug=False)

@@ -12,6 +12,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     pwd = db.Column(db.String(300), nullable=False)
     groups = db.Column(db.String(1000))
+    email_verified = db.Column(db.Boolean(), default = False)
 
     def __repr__(self):
         return '<User %r>' % self.username
