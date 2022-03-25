@@ -5,7 +5,8 @@ from flask import (
     flash,
     url_for,
     session,
-    abort
+    abort,
+    Markup
 )
 import datetime
 from datetime import timedelta
@@ -37,7 +38,7 @@ from flask_mail import Message, Mail
 
 from app import create_app, db, login_manager, bcrypt, debug
 from models import User, Articles, Groups
-from forms import login_form, register_form, submitArticle, createGroup, joinGroup
+from forms import login_form, register_form, submitArticle, createGroup, joinGroup, resendVerification
 from itsdangerous import URLSafeTimedSerializer
 
 
@@ -177,8 +178,12 @@ def login():
             user = User.query.filter_by(email=form.email.data).first()
             if user:
                 if check_password_hash(user.pwd, form.pwd.data):
-                    login_user(user)
-                    return redirect(url_for('articles'))
+                    if user.email_verified:
+                        login_user(user)
+                        return redirect(url_for('articles'))
+                    else:
+                        flash(Markup("Account not verified! Click <a href=\"{}\" class=\"alert-link\">here</a> to resend"
+                              " verification email.".format(url_for("send_confirmation_email"))), "danger")
                 else:
                     flash("Invalid Username or password!", "danger")
             else:
@@ -447,8 +452,41 @@ def confirm_email(token):
 
     user.email_verified = True
     db.session.commit()
-    print("yahoo")
     return redirect(url_for('login'))
+
+@app.route('/send-confirmation-email', methods = ["GET", "POST"])
+def send_confirmation_email():
+    form = resendVerification()
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        if user:
+            print(user.username,"ye")
+            msg = Message(
+            'Welcome to SquibLib, {}, please confirm your email'.format(user.username),
+            sender='notifications@squiblib.com',
+            recipients=[email])
+
+            token = ts.dumps(email, salt='email-confirm-key')
+
+            confirm_url = url_for(
+                'confirm_email',
+                token=token,
+                _external=True)
+
+            html = render_template(
+                'email/activate.html',
+                confirm_url=confirm_url)
+
+            msg.html = html
+            mail = Mail(app)
+            with app.app_context():
+                mail.send(msg)
+        flash("Verification email sent.", "success")
+        return redirect(url_for('login'))
+
+    return render_template("verification.html", form=form, btn_action="Go")
+
 
 if __name__ == "__main__":
     if debug:

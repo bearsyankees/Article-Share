@@ -73,4 +73,10 @@ class joinGroup(FlaskForm):
     notifs = BooleanField("Do you want to receive email notifications when a new article is posted in this group?")
     submit = SubmitField('Join')
 
+class resendVerification(FlaskForm):
+    email = StringField(validators=[InputRequired(), Email(), Length(1, 64)])
+    submit = SubmitField('Send')
+
+
+
 
