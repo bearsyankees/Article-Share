@@ -28,7 +28,7 @@ class register_form(FlaskForm):
             InputRequired(),
             Length(3, 20, message="Please provide a valid name"),
             Regexp(
-                "^[A-Za-z][A-Za-z0-9_.]*$",
+                "^[A-Za-z0-9_.]*$",
                 0,
                 "Usernames must have only letters, " "numbers, dots or underscores",
             ),
@@ -64,13 +64,13 @@ class submitArticle(FlaskForm):
 class createGroup(FlaskForm):
     group_name = StringField(validators=[InputRequired(), Length(1, 64)])
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=72)])
-    notifs = BooleanField("Do you want to receive email notifications when a new article is posted to your group?")
+    notifs = BooleanField("Do you want to receive email notifications when a new article is posted to your group?", default=True)
     submit = SubmitField('Create')
 
 class joinGroup(FlaskForm):
     group_name = StringField(validators=[InputRequired(), Length(1, 64)])
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=72)])
-    notifs = BooleanField("Do you want to receive email notifications when a new article is posted in this group?")
+    notifs = BooleanField("Do you want to receive email notifications when a new article is posted in this group?",default=True)
     submit = SubmitField('Join')
 
 class resendVerification(FlaskForm):

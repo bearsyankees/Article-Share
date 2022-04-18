@@ -17,6 +17,10 @@
           <li class="nav-item">
           <button type="button" class="btn link-danger nav-link" data-bs-toggle="modal" data-bs-target="#leaveModal">Leave group "{{group}}"</button>
         </li>
+          <li class="nav-item">
+              <a class="btn btn-warning" href={{url_for('alter', group = group, ntp = ntp )}}>Turn notifications for "{{group}}" {{notifs_on}}</a>
+
+        </li>
 
     </div>
   </div>

@@ -98,7 +98,7 @@ def get_members(members):
 
 def leave_group(group_to_leave,groups, deletion = False):
     group_instance = Groups.query.filter_by(name=group_to_leave).first()
-    group_list = groups.split(",")
+    group_list = get_groups(groups)
     group_list1 = [group for group in group_list if Groups.query.filter_by(name=group).all() and group != group_to_leave]
     notif_list = get_members(group_instance.notifs)
     notif_list1 = [member for member in notif_list if member != current_user.username]
@@ -117,6 +117,8 @@ def delete_group(group):
     for user in get_members(Groups.query.filter_by(name=group).first().members):
         print(user)
         User.query.filter_by(username=user).first().groups = leave_group(group,User.query.filter_by(username=user).first().groups,deletion = True)
+
+    Articles.query.filter_by(groups = group).delete()
     Groups.query.filter_by(name=group).delete()
 
 def send_post_notifications(recipients, title, poster, link, group, sender = "notifications@squiblib.com"):
@@ -132,16 +134,25 @@ def send_post_notifications(recipients, title, poster, link, group, sender = "no
         mail.send(msg)
 
 def alter_notifs(on, group):
-    if on:
-        notif_adding_group = Groups.query.filter_by(name=group).first().notifs
-        notif_list = get_members(notif_adding_group)
-        notif_list.append(current_user.username)
-        Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
-    if not on:
-        notif_adding_group = Groups.query.filter_by(name=group).first().notifs
-        notif_list = get_members(notif_adding_group)
-        notif_list = [member for member in notif_list if member != current_user.username]
-        Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
+    try:
+        if on:
+            notif_adding_group = Groups.query.filter_by(name=group).first().notifs
+            notif_list = get_members(notif_adding_group)
+            notif_list.append(current_user.username)
+            Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
+        if not on:
+            print("noo")
+            notif_adding_group = Groups.query.filter_by(name=group).first().notifs
+            notif_list = get_members(notif_adding_group)
+            print(notif_list)
+            notif_list = [member for member in notif_list if member != current_user.username]
+            print(notif_list)
+            Groups.query.filter_by(name=group).first().notifs = ','.join(notif_list)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        flash(f"An error occured !", "danger")
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -151,7 +162,9 @@ def load_user(user_id):
 @app.template_global()
 def get_groups(groups):
     if groups:
-        group_list = groups.split(",")
+        fixdic = groups.replace("{","")
+        fixdic = fixdic.replace("}", "")
+        group_list = fixdic.split(",")
         group_list1 = [group for group in group_list if Groups.query.filter_by(name=group).all()]
         return group_list1
     return None
@@ -377,7 +390,7 @@ def join_group():
                     user = User.query.filter_by(username=current_user.username).first()
                     if add_to_group(user, name, notifs):
                         db.session.commit()
-                        return redirect(url_for('articles'))
+                        return redirect(url_for('single_group', group=name))
                     else:
                         db.session.commit()
                         return redirect(url_for('join_group'))
@@ -402,7 +415,13 @@ def single_group(group):
                 query = Articles.query.filter_by(groups=group).order_by(Articles.id.desc()).all()
                 if current_user.username == Groups.query.filter_by(name=group).first().creator:
                     owner = True
-                return render_template("singleGroup.html", query=query, group=group, title=group, groups = get_groups(current_user.groups), owner=owner)
+                if current_user.username in Groups.query.filter_by(name=group).first().notifs.split(",") or current_user.username == Groups.query.filter_by(name=group).first().notifs:
+                    notifs_on = "off"
+                    notifs_to_pass = False
+                else:
+                    notifs_on = "on"
+                    notifs_to_pass = True
+                return render_template("singleGroup.html", query=query, group=group, title=group, groups = get_groups(current_user.groups), owner=owner, notifs_on = notifs_on, ntp = notifs_to_pass)
             else:
                 return "Sorry, you are not part of this group"
         else:
@@ -487,6 +506,21 @@ def send_confirmation_email():
 
     return render_template("verification.html", form=form, btn_action="Go")
 
+@app.route('/alter/<group>/<ntp>')
+@login_required
+def alter(group, ntp):
+    if ntp == "False":
+        ntp = False
+    else:
+        ntp = True
+    print(ntp)
+    alter_notifs(ntp,group)
+    return redirect(url_for("single_group", group = group))
+
+@app.route('/profile')
+@login_required
+def profile():
+    return "Coming soon, {}".format(current_user.username)
 
 if __name__ == "__main__":
     if debug:
