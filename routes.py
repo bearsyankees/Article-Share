@@ -188,7 +188,9 @@ def login():
     print(form.email.data)
     if form.validate_on_submit():
         try:
-            user = User.query.filter_by(email=form.email.data).first()
+            user = User.query.filter_by(email=form.email.data.lower()).first()
+            if not user:
+                user = User.query.filter_by(username=form.email.data.lower()).first()
             if user:
                 if check_password_hash(user.pwd, form.pwd.data):
                     if user.email_verified:
@@ -212,9 +214,9 @@ def register():
     form = register_form()
     if form.validate_on_submit():
         try:
-            email = form.email.data
+            email = form.email.data.lower()
             pwd = form.pwd.data
-            username = form.username.data
+            username = form.username.data.lower()
 
             newuser = User(
                 username=username,
@@ -244,7 +246,7 @@ def register():
             mail = Mail(app)
             with app.app_context():
                 mail.send(msg)
-            flash(f"Account Succesfully created", "success")
+            flash(f"Thanks for signing up! Please check your email ({email}) to verify your account.", "warning")
             return redirect(url_for("login"))
 
 

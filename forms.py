@@ -46,7 +46,7 @@ class register_form(FlaskForm):
     captcha = Recaptcha3Field(action="TestAction", execute_on_load=True)
 
 class login_form(FlaskForm):
-    email = StringField(validators=[InputRequired(), Email(), Length(1, 64)])
+    email = StringField(validators=[InputRequired(), Length(1, 64)])
     pwd = PasswordField(validators=[InputRequired(), Length(min=8, max=72)])
     # Placeholder labels to enable form rendering
     username = StringField(

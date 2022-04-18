@@ -26,7 +26,7 @@
                 
                 {% if request.path == '/register/' %}
                 <div class="form-group mb-3">
-                    {{ form.username(class_="form-control",placeholder="Username")}}
+                    {{ form.username(class_="form-control",placeholder="Username (not case sensitive)")}}
                 </div>
                 {% for error in form.username.errors %}
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -36,7 +36,7 @@
                 {% endfor%}
                 {% endif%}
                 <div class="form-group mb-3">
-                    {{ form.email(class_="form-control",placeholder="Email")}}
+                    {{ form.email(class_="form-control",placeholder="Email or username")}}
                 </div>
                 {% for error in form.email.errors %}
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
