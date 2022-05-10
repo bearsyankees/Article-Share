@@ -34,10 +34,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 {% endfor%}
-                {% endif%}
+                <div class="form-group mb-3">
+                    {{ form.email(class_="form-control",placeholder="Email")}}
+                </div>
+                {% elif request.path == '/login/' %}
                 <div class="form-group mb-3">
                     {{ form.email(class_="form-control",placeholder="Email or username")}}
                 </div>
+                {% endif%}
                 {% for error in form.email.errors %}
                 <div class="alert alert-warning alert-dismissible fade show" role="alert">
                     {{ error }}
