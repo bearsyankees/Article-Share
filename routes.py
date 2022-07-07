@@ -127,8 +127,8 @@ def send_post_notifications(recipients, title, poster, link, group, sender = "no
         sender=sender,
         bcc=recipients)
     msg.body = "This is the email body"
-    msg.html = '<b>{} just shared this article in your group</b> <a href={}>{}</a>! ' \
-               '<br>  <a href={}>{}</a>'.format(poster,url_for("single_group",group = group), group, link, title)
+    msg.html = '<b>{} just shared this article in your group</b> <a href=squiblib.com/groups/{}>{}</a>! ' \
+               '<br>  <a href={}>{}</a>'.format(poster,group, group, link, title)
     mail = Mail(app)
     with app.app_context():
         mail.send(msg)
