@@ -1,6 +1,6 @@
 
 # SquibLib
-This is the code powering the half-baked article sharing social media platofrm [squiblib.com](https://www.squiblib.com).
+This is the code powering the prototype for an article sharing social media platform [squiblib.com](https://www.squiblib.com).
 
 ## Languages/Libraries/Other Tech Used
 
@@ -16,12 +16,13 @@ Heroku
 
 ## What is it?
 
-SquibLib started as a way for me to kill two birds with one stone -- learn how to do secure user 
-authentication on the web, and a way to organize all of the articles sent continuously
-in my family iMessage groupchat. SquibLib allows you to join groups after creating an account, and 
-when you want to share an article with that group you can easily paste the article link in, give it a genre and comments if you want,
-and other members of your group will be able to see it. They will get an email notification (if they have that setting on),
-or will see it when they navigate to your groups feed.
+SquibLib started as a way for me to kill two birds with one stone: learn how to do secure user authentication on the web, and create a way to better organize all of the articles sent continuously in my family iMessage groupchat. 
+
+At present it’s still a proof of concept. I haven’t created a real UI or embellished with fancy bells and whistles. But it fulfilled its intended purpose.
+
+After creating an account on SquibLib, a user can select groups to join, and then read and share news articles in that group. The user interface right now is simple and straightforward: to post an article, a user just pastes the article link in the box, associates a genre with it and optionally adds comments explaining the topic of the article or why it might be interesting to fellow group members, etc. All other members of the group will see it, either by navigating directly to the feed of the group or via receipt of an email notification of a new post (controlled by a setting in the site.)
+ 
+My family has found it very handy.  It has eased the endless scrolling in iMessage while trying to find an article shared from weeks ago!
 
 ## How does it work?
 
