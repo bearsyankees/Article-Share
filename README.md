@@ -1,6 +1,6 @@
 
 # SquibLib
-This is the code powering the half-baked article sharing social media platofrm [squiblib.com](https://www.squiblib.com).
+This is the code powering the half-baked article sharing social media platform [squiblib.com](https://www.squiblib.com).
 
 ## Languages/Libraries/Other Tech Used
 
